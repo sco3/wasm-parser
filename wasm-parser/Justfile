@@ -1,0 +1,8 @@
+
+# list targets
+default:
+    @just --list
+
+# build wasm
+build:
+    wasm-pack build --target web
