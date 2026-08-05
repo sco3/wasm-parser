@@ -40,6 +40,9 @@
 
     <div id="accuracy" style="margin-top: 30px;"></div>
 
-    <script type="module" src="benchmark.js"></script>
+<script type="module">
+    import init, { parse_f64_rust } from './wasm-parser/pkg/rust_parser.js';
+    await init();
+</script>
 </body>
 </html>
