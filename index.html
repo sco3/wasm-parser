@@ -22,15 +22,11 @@
                 parse_f64_rust,
             } from "./wasm-parser/pkg/rust_parser.js";
             await init();
-            const n = 1000;
+            const n = 10_000_000;
             window.parseInput = function () {
                 const value = document.getElementById("input").value;
-
                 const start = performance.now();
-                var result = 0;
-                for (var i = 0; i < n; i++) {
-                    result = parse_f64_rust(value);
-                }
+                const result = parse_f64_rust(value, n);
                 const end = performance.now();
 
                 const nanoseconds = Math.round((end - start) * 1000000);
