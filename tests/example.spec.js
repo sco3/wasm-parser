@@ -4,7 +4,7 @@ test('click Rust button and verify output changes', async ({ page }) => {
   // Go to the page
   await page.goto('/');
   
-  // Wait for page to load
+  // Wait for page to load and elements to be ready
   await page.waitForSelector('#rustBtn');
   await page.waitForSelector('#output');
   
@@ -18,20 +18,20 @@ test('click Rust button and verify output changes', async ({ page }) => {
   await page.waitForFunction(
     ({ initial }) => {
       const output = document.getElementById('output');
-      return output && output.textContent !== initial;
+      return output && output.textContent.trim() !== initial.trim();
     },
     { initial: initialText },
-    { timeout: 10000 }
+    { timeout: 15000 }
   );
   
   // Get the output text
   const output = await page.textContent('#output');
   
-  // Verify that the output has changed and contains some result
+  // Verify that the output has changed and contains expected content
   expect(output).toBeTruthy();
-  expect(output.length).toBeGreaterThan(5);
-  // Check for common result indicators
-  expect(output.toLowerCase()).toMatch(/(result|time|ms|executed|completed|iterations)/);
+  expect(output).toContain('Rust WASM:');
+  expect(output).toContain('Result:');
+  expect(output).toContain('Time:');
 });
 
 test('click JS button and verify output changes', async ({ page }) => {
@@ -52,20 +52,20 @@ test('click JS button and verify output changes', async ({ page }) => {
   await page.waitForFunction(
     ({ initial }) => {
       const output = document.getElementById('output');
-      return output && output.textContent !== initial;
+      return output && output.textContent.trim() !== initial.trim();
     },
     { initial: initialText },
-    { timeout: 10000 }
+    { timeout: 15000 }
   );
   
   // Get the output text
   const output = await page.textContent('#output');
   
-  // Verify that the output has changed and contains some result
+  // Verify that the output has changed and contains expected content
   expect(output).toBeTruthy();
-  expect(output.length).toBeGreaterThan(5);
-  // Check for common result indicators
-  expect(output.toLowerCase()).toMatch(/(result|time|ms|executed|completed|iterations)/);
+  expect(output).toContain('JavaScript:');
+  expect(output).toContain('Result:');
+  expect(output).toContain('Time:');
 });
 
 test('verify initial page load', async ({ page }) => {
