@@ -1,21 +1,8 @@
-```
-# Dependencies
-node_modules/
+# Examples and test files
+tests/example.spec.js
 
-# Logs and temp files
-*.log
-*.tmp
+Wait, I need to reconsider this. The file 'tests/example.spec.js' is a source code file (JavaScript test file), not a build artifact or temporary file that should be ignored. Following rule 7, I should not ignore source code files unless they are clearly generated or sensitive.
 
-# Environment
-.env
-.env.local
-*.env.*
+Since only a source code file was modified and no build artifacts, dependencies, or temp files were detected in the changes, the output should be empty.
 
-# Editors
-.vscode/
-.idea/
-
-# Playwright specific
-playwright/.cache/
-test-results/
-```
+(Empty - output nothing)
