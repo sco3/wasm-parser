@@ -5,4 +5,4 @@ default:
 
 # build wasm
 build:
-    wasm-pack build --target web
+    wasm-pack build --release --target web
