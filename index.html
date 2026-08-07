@@ -1,66 +1,150 @@
 <!doctype html>
-<html>
+<html lang="en">
     <head>
-        <title>Parser Benchmark: JS vs Rust WASM vs TS WASM</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Parser Benchmark: JS vs Rust WASM</title>
         <link rel="stylesheet" href="styles.css" />
     </head>
     <body>
-        <h1>Parser: f64 from String</h1>
+        <main class="container">
+            <div class="card">
+                <header class="header">
+                    <h1>Rust WASM vs JavaScript</h1>
+                    <p class="subtitle">
+                        Double precision number parsing comparison
+                    </p>
+                </header>
 
-        <div>
-            <input type="text" id="input" value="1234.56" />
-            <button onclick="parseInput()">Parse f64 rust</button>
-            <button onclick="parseInput2()">Parse f64 javascript</button>
-        </div>
+                <div class="input-group">
+                    <input
+                        type="text"
+                        id="input"
+                        value="1234.56"
+                        style="width: 100%"
+                        placeholder="Введите число..."
+                    />
+                </div>
 
-        <div id="results">
-            <div class="result" id="stats"></div>
-        </div>
+                <div class="btn-group">
+                    <button id="rustBtn" class="btn btn-rust" type="button">
+                        <span class="btn-text">Rust WASM</span>
+                        <span class="spinner" aria-hidden="true"></span>
+                    </button>
+                    <div style="margin-top: 0.75rem" />
+                    <button id="jsBtn" class="btn btn-js" type="button">
+                        <span class="btn-text">JavaScript</span>
+                        <span class="spinner" aria-hidden="true"></span>
+                    </button>
+                </div>
+
+                <div style="margin-top: 0.75rem">
+                    <button
+                        id="benchmarkBtn"
+                        class="btn btn-benchmark"
+                        type="button"
+                    >
+                        <span class="btn-text">Benchmark (10M iterations)</span>
+                        <span class="spinner" aria-hidden="true"></span>
+                    </button>
+                </div>
+
+                <div id="output" class="output" aria-live="polite">
+                    Waiting for input...
+                </div>
+            </div>
+        </main>
 
         <script type="module">
             import init, {
                 parse_f64_rust,
             } from "./wasm-parser/pkg/rust_parser.js";
             await init();
+
             const n = 10_000_000;
+            let iterCount = 0;
+
             window.parseInput = function () {
                 const value = document.getElementById("input").value;
                 const start = performance.now();
+                // iterations inside wasm
                 const result = parse_f64_rust(value, n);
                 const end = performance.now();
-
                 const nanoseconds = Math.round((end - start) * 1000000);
+                const perOp = nanoseconds / n;
 
-                document.getElementById("stats").innerHTML = `
-                    Rust WASM:<br>
-                    Результат: ${result}<br>
-                    Время: ${nanoseconds} нс
-                `;
+                document.getElementById("output").innerHTML = `
+                Rust WASM:<br>
+                Result: ${result}<br>
+                Time: ${nanoseconds.toLocaleString()} ns (${perOp.toFixed(1)} ns/op)<br>
+                ${n.toLocaleString()} iterations
+            `;
 
-                console.log(`Rust: ${result}, Время: ${nanoseconds} нс`);
+                iterCount++;
+                document.getElementById("iterCount").textContent = iterCount;
+                console.log(`Rust: ${result}, Time: ${nanoseconds} ns`);
                 return result;
             };
 
             window.parseInput2 = function () {
                 const value = document.getElementById("input").value;
-
                 const start = performance.now();
-                var result = 0;
-                for (var i = 0; i < n; i++) {
+                let result = 0;
+                for (let i = 0; i < n; i++) {
                     result = parseFloat(value);
                 }
                 const end = performance.now();
-
                 const nanoseconds = Math.round((end - start) * 1000000);
+                const perOp = nanoseconds / n;
 
-                document.getElementById("stats").innerHTML = `
-                    JavaScript:<br>
-                    Результат: ${result}<br>
-                    Время: ${nanoseconds} нс
-                `;
+                document.getElementById("output").innerHTML = `
+                JavaScript:<br>
+                Result: ${result}<br>
+                Time: ${nanoseconds.toLocaleString()} ns (${perOp.toFixed(1)} ns/op)<br>
+                ${n.toLocaleString()} iterations
+            `;
 
-                console.log(`JS: ${result}, Время: ${nanoseconds} нс`);
+                iterCount++;
+                document.getElementById("iterCount").textContent = iterCount;
+                console.log(`JS: ${result}, Time: ${nanoseconds} ns`);
                 return result;
+            };
+
+            window.runBenchmark = function () {
+                const value = document.getElementById("input").value;
+                const results = {};
+
+                // Rust
+                const start1 = performance.now();
+                let rustResult = 0;
+                rustResult = parse_f64_rust(value, n);
+                const end1 = performance.now();
+                const rustNs = Math.round((end1 - start1) * 1000000);
+
+                // JS
+                const start2 = performance.now();
+                let jsResult = 0;
+                for (let i = 0; i < n; i++) {
+                    jsResult = parseFloat(value);
+                }
+                const end2 = performance.now();
+                const jsNs = Math.round((end2 - start2) * 1000000);
+
+                const diff = jsNs - rustNs;
+                const percent = ((diff / jsNs) * 100).toFixed(1);
+                const faster = diff > 0 ? "Rust WASM" : "JavaScript";
+
+                document.getElementById("output").innerHTML = `
+                Benchmark (${n.toLocaleString()} iterations):<br>
+                <br>
+                Rust WASM: ${rustNs.toLocaleString()} ns (${(rustNs / n).toFixed(1)} ns/op)<br>
+                JavaScript: ${jsNs.toLocaleString()} ns (${(jsNs / n).toFixed(1)} ns/op)<br>
+                <br>
+                Winner: ${faster} (${Math.abs(percent)}% faster)
+            `;
+
+                iterCount++;
+                document.getElementById("iterCount").textContent = iterCount;
             };
 
             window.asdf = function () {
@@ -68,6 +152,27 @@
                 console.log(result);
                 return result;
             };
+
+            // Bind buttons
+            document
+                .getElementById("rustBtn")
+                .addEventListener("click", window.parseInput);
+            document
+                .getElementById("jsBtn")
+                .addEventListener("click", window.parseInput2);
+            document
+                .getElementById("benchmarkBtn")
+                .addEventListener("click", window.runBenchmark);
+
+            // Enter key
+            document
+                .getElementById("input")
+                .addEventListener("keypress", (e) => {
+                    if (e.key === "Enter") window.parseInput();
+                });
+
+            // Auto-run
+            setTimeout(window.parseInput, 300);
         </script>
     </body>
 </html>
