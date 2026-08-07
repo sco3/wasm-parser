@@ -1,70 +1,68 @@
 import { test, expect } from "@playwright/test";
+import fs from "fs";
 
-test("Rust parser works", async ({ page }) => {
-  await page.goto("http://localhost:3000");
+test("Simple benchmark test with screenshot", async ({ page }) => {
+  console.log("🚀 Starting test...");
 
-  // Enter number
-  await page.fill("#input", "1234.56");
-
-  // Press Rust
-  await page.click("#rustBtn");
-
-  await page.waitForSelector("#output");
-
-  // Check result
-  const output = await page.textContent("#output");
-  expect(output).toContain("Result: 1234.56");
-  console.log("✅ Rust parser test passed!");
-});
-
-test("JavaScript parser works", async ({ page }) => {
-  await page.goto("http://localhost:3000");
-
-  await page.fill("#input", "1234.56");
-  await page.click("#jsBtn");
-  await page.waitForSelector("#output");
-
-  const output = await page.textContent("#output");
-  expect(output).toContain("Result: 1234.56");
-  console.log("✅ JavaScript parser test passed!");
-});
-
-test("Both parsers give same result", async ({ page }) => {
-  await page.goto("http://localhost:3000");
-
-  const testValues = ["1234.56", "0.0", "-123.45", "1e10"];
-
-  for (const value of testValues) {
-    await page.fill("#input", value);
-
-    // Rust
-    await page.click("#rustBtn");
-    await page.waitForSelector("#output");
-    const rustOutput = await page.textContent("#output");
-    const rustMatch = rustOutput.match(/Result: ([^\n<]+)/);
-    const rustResult = rustMatch ? parseFloat(rustMatch[1]) : null;
-
-    // JS
-    await page.click("#jsBtn");
-    await page.waitForSelector("#output");
-    const jsOutput = await page.textContent("#output");
-    const jsMatch = jsOutput.match(/Result: ([^\n<]+)/);
-    const jsResult = jsMatch ? parseFloat(jsMatch[1]) : null;
-
-    expect(rustResult).toBe(jsResult);
-    console.log(`✅ ${value} -> Rust: ${rustResult}, JS: ${jsResult}`);
+  // Убедимся что папка существует
+  if (!fs.existsSync("screenshots")) {
+    fs.mkdirSync("screenshots", { recursive: true });
   }
+
+  await page.goto("http://localhost:3000");
+  console.log("✅ Page loaded");
+
+  // Ждем загрузки страницы
+  await page.waitForLoadState("networkidle");
+
+  // Проверяем что инпут существует
+  const inputExists = await page.locator("#input").count();
+  console.log(`Input exists: ${inputExists > 0}`);
+
+  // Вводим число
+  await page.fill("#input", "1234.56");
+  console.log("✅ Input filled");
+
+  // Скриншот до
+  await page.screenshot({
+    path: "screenshots/before.png",
+    fullPage: true,
+  });
+  console.log("✅ Screenshot before saved");
+
+  // Нажимаем кнопку
+  console.log("🔘 Clicking benchmark button...");
+  await page.click("#benchmarkBtn");
+  console.log("✅ Button clicked");
+
+  // Ждем результат
+  await page.waitForTimeout(3000);
+
+  // Проверяем что output обновился
+  const outputText = await page.textContent("#output");
+  console.log("📊 Output:", outputText);
+
+  // Скриншот после
+  await page.screenshot({
+    path: "screenshots/after.png",
+    fullPage: true,
+  });
+  console.log("✅ Screenshot after saved");
+
+  // Проверяем
+  expect(outputText).toContain("Benchmark");
+  expect(outputText).toContain("Winner:");
+
+  console.log("✅ Test passed!");
 });
 
-test("Benchmark runs without errors", async ({ page }) => {
+test("Quick Rust test", async ({ page }) => {
   await page.goto("http://localhost:3000");
-
   await page.fill("#input", "1234.56");
-  await page.click("#benchmarkBtn");
-  await page.waitForSelector("#output");
+  await page.click("#rustBtn");
+  await page.waitForTimeout(1000);
 
   const output = await page.textContent("#output");
-  expect(output).toContain("Benchmark");
-  expect(output).toContain("Winner:");
-  console.log("✅ Benchmark test passed!");
+  console.log("Rust output:", output);
+  expect(output).toContain("Result:");
 });

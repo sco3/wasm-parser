@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22" # Используем Node 22 LTS
+          node-version: "22"
 
       - name: Install wasm-pack
         run: cargo install wasm-pack
@@ -31,27 +31,40 @@ jobs:
       - name: Install Playwright
         run: |
           npm install -D @playwright/test
-          npx playwright install chromium
+          npx playwright install chromium --with-deps
 
       - name: Create screenshots directory
         run: mkdir -p screenshots
 
-      - name: Run tests
-        run: npx playwright test
+      - name: List files before test
+        run: |
+          echo "Current directory:"
+          ls -la
+          echo "Screenshots directory:"
+          ls -la screenshots/ || echo "Empty"
 
-      - name: List screenshots
+      - name: Run tests with verbose output
+        run: |
+          npx playwright test --reporter=list
+        env:
+          DEBUG: pw:api
+
+      - name: List files after test
         if: always()
         run: |
-          echo "Screenshots in directory:"
-          ls -la screenshots/ || echo "No screenshots found"
+          echo "Files after test:"
+          ls -la
+          echo "Screenshots directory:"
+          ls -la screenshots/ || echo "No screenshots directory"
+          echo "Test results:"
+          ls -la test-results/ || echo "No test-results"
 
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-screenshots
+          name: screenshots
           path: |
-            screenshots/*.png
-            screenshots/*.jpg
-            screenshots/*.jpeg
-          if-no-files-found: warn
+            screenshots/
+            test-results/
+          if-no-files-found: ignore
