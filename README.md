@@ -1,4 +1,3 @@
-````markdown
 # Parser Benchmark: Rust WASM vs JavaScript
 
 ## Build & Run
@@ -11,6 +10,7 @@ wasm-pack build --target web --out-dir pkg
 
 npx serve .
 ```
+
 ````
 
 Open `http://localhost:3000`
@@ -48,3 +48,4 @@ Open `http://localhost:3000`
 ## License
 
 MIT
+````
