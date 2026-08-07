@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22" # Используем Node 22 LTS
 
       - name: Install wasm-pack
         run: cargo install wasm-pack
@@ -39,9 +39,19 @@ jobs:
       - name: Run tests
         run: npx playwright test
 
+      - name: List screenshots
+        if: always()
+        run: |
+          echo "Screenshots in directory:"
+          ls -la screenshots/ || echo "No screenshots found"
+
       - name: Upload screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-screenshots
-          path: screenshots/*.png
+          path: |
+            screenshots/*.png
+            screenshots/*.jpg
+            screenshots/*.jpeg
+          if-no-files-found: warn
