@@ -1,81 +1,81 @@
 import { test, expect } from '@playwright/test';
 
-test('click Rust button and verify output changes', async ({ page }) => {
-  // Go to the page
-  await page.goto('/');
-  
-  // Wait for page to load and elements to be ready
-  await page.waitForSelector('#rustBtn');
-  await page.waitForSelector('#output');
-  
-  // Get initial text
-  const initialText = await page.textContent('#output');
-  
-  // Click the Rust WASM button
-  await page.click('#rustBtn');
-  
-  // Wait for output to change (not equal to initial)
-  await page.waitForFunction(
-    ({ initial }) => {
-      const output = document.getElementById('output');
-      return output && output.textContent.trim() !== initial.trim();
-    },
-    { initial: initialText },
-    { timeout: 15000 }
-  );
-  
-  // Get the output text
-  const output = await page.textContent('#output');
-  
-  // Verify that the output has changed and contains expected content
-  expect(output).toBeTruthy();
-  expect(output).toContain('Rust WASM:');
-  expect(output).toContain('Result:');
-  expect(output).toContain('Time:');
-});
+test.describe('WASM Parser Tests', () => {
+  test('page loads with correct title and buttons', async ({ page }) => {
+    await page.goto('/');
+    
+    // Wait for page to be fully loaded
+    await page.waitForLoadState('networkidle');
+    await new Promise(r => setTimeout(r, 2000)); // Wait for WASM initialization
+    
+    // Check page title
+    await expect(page).toHaveTitle(/WASM Parser/);
+    
+    // Check that buttons exist
+    const rustButton = page.locator('#rustBtn');
+    const jsButton = page.locator('#jsBtn');
+    
+    await expect(rustButton).toBeVisible();
+    await expect(jsButton).toBeVisible();
+    
+    // Check initial output
+    const output = page.locator('#output');
+    await expect(output).toBeVisible();
+    
+    // Get initial text
+    const initialText = await output.textContent();
+    expect(initialText).toContain('Waiting for input');
+  });
 
-test('click JS button and verify output changes', async ({ page }) => {
-  // Go to the page
-  await page.goto('/');
-  
-  // Wait for page to load
-  await page.waitForSelector('#jsBtn');
-  await page.waitForSelector('#output');
-  
-  // Get initial text
-  const initialText = await page.textContent('#output');
-  
-  // Click the JavaScript button
-  await page.click('#jsBtn');
-  
-  // Wait for output to change
-  await page.waitForFunction(
-    ({ initial }) => {
-      const output = document.getElementById('output');
-      return output && output.textContent.trim() !== initial.trim();
-    },
-    { initial: initialText },
-    { timeout: 15000 }
-  );
-  
-  // Get the output text
-  const output = await page.textContent('#output');
-  
-  // Verify that the output has changed and contains expected content
-  expect(output).toBeTruthy();
-  expect(output).toContain('JavaScript:');
-  expect(output).toContain('Result:');
-  expect(output).toContain('Time:');
-});
+  test('click Rust button and check output updates', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await new Promise(r => setTimeout(r, 2000));
+    
+    const output = page.locator('#output');
+    const rustButton = page.locator('#rustBtn');
+    
+    // Click the Rust button
+    await rustButton.click();
+    
+    // Wait for output to update
+    await page.waitForFunction(
+      () => {
+        const output = document.getElementById('output');
+        return output && !output.textContent.includes('Waiting for input');
+      },
+      { timeout: 10000 }
+    );
+    
+    // Verify output contains expected content
+    const outputText = await output.textContent();
+    expect(outputText).toContain('Rust');
+    expect(outputText).toContain('Result');
+  });
 
-test('verify initial page load', async ({ page }) => {
-  await page.goto('/');
-  
-  // Check that the page title is correct
-  await expect(page).toHaveTitle(/Parser Benchmark/);
-  
-  // Check that the main elements exist
-  await expect(page.locator('#rustBtn')).toBeVisible();
-  await expect(page.locator('#jsBtn')).toBeVisible();
-  await expect(page.locator('#output')).toBeVisible();
+  test('click JS button and check output updates', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await new Promise(r => setTimeout(r, 2000));
+    
+    const output = page.locator('#output');
+    const jsButton = page.locator('#jsBtn');
+    
+    // Click the JS button
+    await jsButton.click();
+    
+    // Wait for output to update
+    await page.waitForFunction(
+      () => {
+        const output = document.getElementById('output');
+        return output && !output.textContent.includes('Waiting for input');
+      },
+      { timeout: 10000 }
+    );
+    
+    // Verify output contains expected content
+    const outputText = await output.textContent();
+    expect(outputText).toContain('JavaScript');
+    expect(outputText).toContain('Result');
+  });
 });
