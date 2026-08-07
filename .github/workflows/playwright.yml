@@ -23,9 +23,6 @@ jobs:
       - name: Install Playwright
         run: bash ./scripts/install-playwright.sh
 
-      - name: Create Playwright config
-        run: bash ./scripts/create-playwright-config.sh
-
       - name: Run Playwright tests
         run: bash ./scripts/run-tests.sh
 

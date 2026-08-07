@@ -6,5 +6,3 @@ set -e
 echo "🧪 Running Playwright tests..."
 
 npx playwright test
-
-echo "✅ Tests complete!"
