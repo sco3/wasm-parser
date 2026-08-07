@@ -33,5 +33,15 @@ jobs:
           npm install -D @playwright/test
           npx playwright install chromium
 
+      - name: Create screenshots directory
+        run: mkdir -p screenshots
+
       - name: Run tests
         run: npx playwright test
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-screenshots
+          path: screenshots/*.png
