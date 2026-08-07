@@ -15,7 +15,7 @@ fi
 echo "Installing @playwright/test..."
 npm install -D @playwright/test
 
-# Install Playwright browsers
+# Install Playwright browsers (only chromium for CI)
 echo "Installing Playwright browsers (Chromium)..."
 npx playwright install --with-deps chromium
 

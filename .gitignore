@@ -2,15 +2,20 @@
 # Dependencies
 node_modules/
 
-# Editor/IDE files
-.vscode/
+# Logs and temp files
+*.log
+*.tmp
 
-# Environment files
+# Environment
 .env
 .env.local
 *.env.*
 
-# Logs and temporary files
-*.log
-*.tmp
+# Editors
+.vscode/
+.idea/
+
+# Playwright specific
+playwright/.cache/
+test-results/
 ```

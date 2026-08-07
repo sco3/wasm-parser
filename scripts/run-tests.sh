@@ -5,4 +5,4 @@ set -e
 
 echo "🧪 Running Playwright tests..."
 
-npx playwright test
+npx playwright test --project=chromium

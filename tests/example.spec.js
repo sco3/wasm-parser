@@ -4,14 +4,21 @@ test('click Rust button and verify output', async ({ page }) => {
   // Go to the page
   await page.goto('/');
   
-  // Wait for page to load
+  // Wait for page to load and WASM to initialize
   await page.waitForSelector('#rustBtn');
+  await page.waitForFunction(() => {
+    const output = document.getElementById('output');
+    return output && output.textContent.includes('Rust WASM:');
+  }, { timeout: 10000 });
   
   // Click the Rust WASM button
   await page.click('#rustBtn');
   
-  // Wait for output to update
-  await page.waitForSelector('#output');
+  // Wait for output to update with new result
+  await page.waitForFunction(() => {
+    const output = document.getElementById('output');
+    return output && output.textContent.includes('iterations');
+  }, { timeout: 10000 });
   
   // Get the output text
   const output = await page.textContent('#output');
@@ -32,8 +39,11 @@ test('click JS button and verify output', async ({ page }) => {
   // Click the JavaScript button
   await page.click('#jsBtn');
   
-  // Wait for output to update
-  await page.waitForSelector('#output');
+  // Wait for output to update with new result
+  await page.waitForFunction(() => {
+    const output = document.getElementById('output');
+    return output && output.textContent.includes('JavaScript:');
+  }, { timeout: 10000 });
   
   // Get the output text
   const output = await page.textContent('#output');
