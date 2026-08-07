@@ -1,0 +1,70 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
+      - name: Build WASM
+        run: |
+          cd wasm-parser
+          wasm-pack build --target web
+          cd ..
+
+      - name: Install Playwright
+        run: |
+          npm install -D @playwright/test
+          npx playwright install chromium --with-deps
+
+      - name: Create screenshots directory
+        run: mkdir -p screenshots
+
+      - name: List files before test
+        run: |
+          echo "Current directory:"
+          ls -la
+          echo "Screenshots directory:"
+          ls -la screenshots/ || echo "Empty"
+
+      - name: Run tests with verbose output
+        run: |
+          npx playwright test --reporter=list
+        env:
+          DEBUG: pw:api
+
+      - name: List files after test
+        if: always()
+        run: |
+          echo "Files after test:"
+          ls -la
+          echo "Screenshots directory:"
+          ls -la screenshots/ || echo "No screenshots directory"
+          echo "Test results:"
+          ls -la test-results/ || echo "No test-results"
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: |
+            screenshots/
+            test-results/
+          if-no-files-found: ignore
