@@ -34,6 +34,10 @@ Open `http://localhost:3000`
 2. Click **Rust WASM** or **JavaScript** to test
 3. Click **Benchmark** to compare both (10M iterations)
 
+## Screenshot
+
+![Screenshot](images/screenshot.png)
+
 ## Technologies
 
 - Rust + WebAssembly (`wasm-bindgen`)
