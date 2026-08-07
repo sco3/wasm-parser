@@ -6,7 +6,7 @@
 default:
     @just --list
 
-# serve - start server 
+# serve - start server
 serve: 
-    serve . 
+    npx serve . 
 
